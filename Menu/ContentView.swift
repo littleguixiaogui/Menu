@@ -35,7 +35,7 @@ struct ContentView: View {
         DishItem(name:"青菜"),
         DishItem(name:"红烧肉"),
         DishItem(name:"蒜蓉炒菜"),
-        DishItem(name: "土豆丝")
+        DishItem(name:"土豆丝changing just for github repo test")
     ]
     @State private var DessertList:[DessertItem]=[
         DessertItem(name:"empty")
