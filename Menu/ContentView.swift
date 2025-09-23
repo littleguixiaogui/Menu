@@ -33,7 +33,7 @@ struct ContentView: View {
     ]
     @State private var DishList:[DishItem]=[
         DishItem(name:"青菜"),
-        DishItem(name:"红烧肉"),
+        DishItem(name:"红烧肉second new branch test, changes in main branch"),
         DishItem(name:"蒜蓉炒菜"),
         DishItem(name:"土豆丝changing just for github repo test")
     ]
