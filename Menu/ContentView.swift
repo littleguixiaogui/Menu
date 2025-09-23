@@ -46,6 +46,48 @@ struct ContentView: View {
     @State private var showGoShop:Bool = false
     
     var body: some View {
+        //main dish
+        VStack{
+            Text("主食")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .frame(width: 250, height: 90)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.gray)
+                )
+                .padding()
+                .onTapGesture {
+                    withAnimation{
+                        
+                        showFoodlist=true
+                        showDishlist=false
+                        showDessert=false
+                        showGoShop=false
+                    }
+                    
+                }
+            if showFoodlist{
+                VStack{
+                    ForEach($FoodList) { $food in
+                        HStack{
+                            Button{
+                                food.isFoodChoose.toggle()
+                            }label:{
+                                Image(systemName:food.isFoodChoose ? "heart.fill":"heart")
+                                    .foregroundStyle(.green)
+                                    .font(.system(size: 25))
+                                Text(food.name)
+                                    .font(.system(size: 25))
+                                    .padding()
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
         //main food
         VStack{
             VStack{
@@ -90,48 +132,7 @@ struct ContentView: View {
                 }
                 
             }
-            //main dish
-            VStack{
-                Text("主食")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .frame(width: 250, height: 90)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.gray)
-                    )
-                    .padding()
-                    .onTapGesture {
-                        withAnimation{
-                            
-                            showFoodlist=true
-                            showDishlist=false
-                            showDessert=false
-                            showGoShop=false
-                        }
-                        
-                    }
-                if showFoodlist{
-                    VStack{
-                        ForEach($FoodList) { $food in
-                            HStack{
-                                Button{
-                                    food.isFoodChoose.toggle()
-                                }label:{
-                                    Image(systemName:food.isFoodChoose ? "heart.fill":"heart")
-                                        .foregroundStyle(.green)
-                                        .font(.system(size: 25))
-                                    Text(food.name)
-                                        .font(.system(size: 25))
-                                        .padding()
-                                }
-                            }
-                        }
-                    }
-                }
-                
-            }
+            
             
             //dessert
             VStack{
@@ -182,29 +183,20 @@ struct ContentView: View {
                         showGoShop=true
                     }
                 }
-            var chooseItems: [String]{
-                let foods=FoodList.filter{$0.isFoodChoose}.map{$0.name}
-                let dishes=DishList.filter{$0.isDishChoose}.map{$0.name}
-                let desserts=DessertList.filter{$0.isDessertChoose}.map{$0.name}
-                return foods+dishes+desserts
+            var itemNumber: String{
+                let foods=FoodList.filter{$0.isFoodChoose}.count
+                let dishes=DishList.filter{$0.isDishChoose}.count
+                let desserts=DessertList.filter{$0.isDessertChoose}.count
+                return "\(foods)\(dishes)\(desserts)"
             }
             if showGoShop{
-                VStack{
-                    if chooseItems.isEmpty{
-                        Text("购物车是空的")
-                            .font(.system(size: 25))
-                    }else{
-                        HStack{
-                            ForEach(chooseItems, id: \.self) { item in
-                                Text(item)
-                                    .font(.system(size: 25))
-                                
-                            }
-                        }
+                HStack{
+                    Text(itemNumber)
+                        .font(.system(size: 25))
+                    Button ("结算"){
                         
                     }
                 }
-
             }
         }
     }
