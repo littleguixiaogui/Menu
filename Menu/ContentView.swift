@@ -37,80 +37,112 @@ struct ContentView: View {
         DishItem(name:"蒜蓉炒菜"),
     ]
     @State private var DessertList:[DessertItem]=[
-        DessertItem(name:"empty")
+        DessertItem(name:"提拉米苏"),
+        DessertItem(name: "姜撞奶")
     ]
     
     @State private var showDishlist: Bool = false
     @State private var showFoodlist: Bool = false
-    @State private var showDessert:Bool = false
-    @State private var showGoShop:Bool = false
+    @State private var showDessertList:Bool = false
+    @State private var showGoShop:Bool = true
+    
     
     var body: some View {
-        //main dish
-        VStack{
-            Text("主食")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundStyle(.white)
-                .frame(width: 250, height: 90)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray)
-                )
-                .padding()
-                .onTapGesture {
-                    withAnimation{
-                        
-                        showFoodlist=true
-                        showDishlist=false
-                        showDessert=false
-                        showGoShop=false
-                    }
-                    
-                }
-            if showFoodlist{
-                VStack{
-                    ForEach($FoodList) { $food in
-                        HStack{
-                            Button{
-                                food.isFoodChoose.toggle()
-                            }label:{
-                                Image(systemName:food.isFoodChoose ? "heart.fill":"heart")
-                                    .foregroundStyle(.green)
-                                    .font(.system(size: 25))
-                                Text(food.name)
-                                    .font(.system(size: 25))
-                                    .padding()
-                            }
+        
+        var itemNumber: String{
+            let foods=FoodList.filter{$0.isFoodChoose}.count
+            let dishes=DishList.filter{$0.isDishChoose}.count
+            let desserts=DessertList.filter{$0.isDessertChoose}.count
+            return "\(foods)\(dishes)\(desserts)"
+        }
+        
+        HStack{
+            VStack{
+                Text("主食")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(width: 160, height: 70, alignment: .trailing)
+                    .padding(.trailing)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
+                    .offset(x:showFoodlist ? -50:-90)
+                    .onTapGesture {
+                        withAnimation {
+                            showFoodlist=true
+                            showDishlist=false
+                            showDessertList=false
+                            showGoShop=false
                         }
                     }
-                }
-            }
-            
-        }
-        //main food
-        VStack{
-            VStack{
                 Text("主菜")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
-                    .frame(width: 250, height: 90)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.gray)
-                    )
-                    .padding()
+                    .frame(width: 160, height: 70, alignment: .trailing)
+                    .padding(.trailing)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
+                    .offset(x:showDishlist ? -50:-90)
                     .onTapGesture {
-                        withAnimation{
-                            
+                        withAnimation {
                             showFoodlist=false
                             showDishlist=true
-                            showDessert=false
+                            showDessertList=false
                             showGoShop=false
                         }
-                        
                     }
+                Text("甜点")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(width: 160, height: 70, alignment: .trailing)
+                    .padding(.trailing)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
+                    .offset(x:showDessertList ? -50:-90)
+                    .onTapGesture{
+                        withAnimation {
+                            showFoodlist=false
+                            showDishlist=false
+                            showDessertList=true
+                            showGoShop=false
+                        }
+                    }
+                Text("结算")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .frame(width: 160, height: 70, alignment: .trailing)
+                    .padding(.trailing)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
+                    .offset(x:showGoShop ? -50:-90)
+                    .onTapGesture {
+                        withAnimation {
+                            showFoodlist=false
+                            showDishlist=false
+                            showDessertList=false
+                            showGoShop=true
+                        }
+                    }
+            }
+            Spacer()
+            VStack{
+                if showFoodlist{
+                    VStack{
+                        ForEach($FoodList) { $food in
+                            HStack{
+                                Button{
+                                    food.isFoodChoose.toggle()
+                                }label:{
+                                    Image(systemName:food.isFoodChoose ? "heart.fill":"heart")
+                                        .foregroundStyle(.green)
+                                        .font(.system(size: 25))
+                                    Text(food.name)
+                                        .font(.system(size: 25))
+                                        .padding()
+                                }
+                            }
+                        }
+                    }
+                }
                 if showDishlist{
                     VStack{
                         ForEach($DishList) { $dish in
@@ -130,77 +162,37 @@ struct ContentView: View {
                         }
                     }
                 }
-                
-            }
-            
-            
-            //dessert
-            VStack{
-                Text("甜点")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .frame(width: 250, height: 90)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.gray)
-                    )
-                    .padding()
-                    .onTapGesture{
-                        withAnimation {
-                            showFoodlist=false
-                            showDishlist=false
-                            showDessert=true
-                            showGoShop=false
+                if showDessertList{
+                    VStack{
+                        ForEach($DessertList){ $dessert in
+                            HStack{
+                                Button{
+                                    dessert.isDessertChoose.toggle()
+                                }label:{
+                                    Image(systemName: dessert.isDessertChoose ? "heart.fill" : "heart")
+                                        .foregroundStyle(.green)
+                                        .font(.system(size: 25))
+                                    Text(dessert.name)
+                                        .font(.system(size: 25))
+                                        .padding()
+                                }
+                            }
                         }
                     }
-                if showDessert{
-                    VStack{
-                        Text("Empty for now")
+                }
+                if showGoShop{
+                    HStack{
+                        Text(itemNumber)
+                            .font(.system(size: 25))
+                        Button ("结算"){
+                            
+                        }
                     }
                 }
             }
-        }
-            
-        //check out button
-        VStack{
-            Text("购物车")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundStyle(.white)
-                .frame(width: 250, height: 90)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.gray)
-                    
-                )
-                .padding()
-                .onTapGesture {
-                    withAnimation{
-                        showFoodlist=false
-                        showDishlist=false
-                        showDessert=false
-                        showGoShop=true
-                    }
-                }
-            var itemNumber: String{
-                let foods=FoodList.filter{$0.isFoodChoose}.count
-                let dishes=DishList.filter{$0.isDishChoose}.count
-                let desserts=DessertList.filter{$0.isDessertChoose}.count
-                return "\(foods)\(dishes)\(desserts)"
-            }
-            if showGoShop{
-                HStack{
-                    Text(itemNumber)
-                        .font(.system(size: 25))
-                    Button ("结算"){
-                        
-                    }
-                }
-            }
+            .padding(.trailing)
         }
     }
-
 }
 
 #Preview {
