@@ -29,25 +29,13 @@ struct DessertItem: Identifiable {
     let dessertIngredient: [String]
 }
 
-
-
-struct TopButton: View {
-    let topTitle: String
-    let buttonActive: Bool
-    let buttonAction: () -> Void
-    
-    var body: some View {
-        Text(topTitle)
-            .font(.largeTitle)
-            .fontWeight(.bold)
-            .foregroundStyle(.white)
-            .frame(width: 160, height: 70)
-            .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
-            .onTapGesture {
-                buttonAction()
-            }
-    }
+struct RelishItem: Identifiable {
+    let id = UUID()
+    let name: String
+    var isRelishChoose: Bool = false
+    let relishIngredient: [String]
 }
+
 
 struct MenuButton: View {
     let title: String
@@ -57,10 +45,10 @@ struct MenuButton: View {
     //menu button
     var body: some View{
         Text(title)
-            .font(.largeTitle)
+            .font(.system(size: 20))
             .fontWeight(.bold)
             .foregroundStyle(.white)
-            .frame(width: 160, height: 70, alignment: .trailing)
+            .frame(width: 140, height: 120, alignment: .trailing)
             .padding(.trailing)
             .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
             .offset(x:isActive ? -50:-90)
@@ -84,10 +72,22 @@ struct ContentView: View {
         DishItem(name:"蒜蓉炒菜",dishIngredient: ["蒜蓉","青菜"]),
     ]
     @State private var DessertList:[DessertItem]=[
-        DessertItem(name:"提拉米苏",dessertIngredient: ["提","拉","米","苏",]),
+        DessertItem(name:"提拉米苏",dessertIngredient: ["芝士🧀","拇指饼干","鸡蛋","柠檬","糖","柠檬","咖啡"]),
         DessertItem(name: "姜撞奶",dessertIngredient: ["姜","奶"])
     ]
-    
+    @State private var RelishList:[RelishItem]=[
+        RelishItem(name:"葱",relishIngredient: ["葱"]),
+        RelishItem(name:"葱白",relishIngredient: ["葱白"]),
+        RelishItem(name:"姜",relishIngredient: ["姜"]),
+        RelishItem(name:"蒜",relishIngredient: ["蒜"]),
+        RelishItem(name:"醋",relishIngredient: ["醋"]),
+        RelishItem(name:"生抽",relishIngredient: ["生抽"]),
+        RelishItem(name:"老抽",relishIngredient: ["老抽"]),
+        RelishItem(name:"油",relishIngredient: ["油"]),
+        RelishItem(name:"黄油",relishIngredient:["黄油"]),
+        RelishItem(name:"盐",relishIngredient: ["盐"]),
+        RelishItem(name:"糖",relishIngredient: ["糖"]),
+    ]
     
     
     
@@ -98,9 +98,11 @@ struct ContentView: View {
     @State private var showDishlist: Bool = false
     @State private var showFoodlist: Bool = false
     @State private var showDessertList:Bool = false
+    @State private var showRelishList:Bool = false
     @State private var showGoShop:Bool = true
     
    
+    @State private var ingredientPickUp: Set<String>=[]
     
     
     var body: some View {
@@ -109,36 +111,55 @@ struct ContentView: View {
             let foods=FoodList.filter{$0.isFoodChoose}.count
             let dishes=DishList.filter{$0.isDishChoose}.count
             let desserts=DessertList.filter{$0.isDessertChoose}.count
-            return "\(foods)\(dishes)\(desserts)"
+            let relishes=RelishList.filter{$0.isRelishChoose}.count
+            return "\(foods)\(dishes)\(desserts)\(relishes)"
         }
         
         var ingredientList: [String] {
             let foodIngredientList=FoodList.filter{$0.isFoodChoose}.flatMap{$0.foodIngredient}
             let dishIngredientList=DishList.filter{$0.isDishChoose}.flatMap{$0.dishIngredient}
             let dessertIngredientList=DessertList.filter{$0.isDessertChoose}.flatMap{$0.dessertIngredient}
-            return foodIngredientList+dishIngredientList+dessertIngredientList
+            let relishIngredientList=RelishList.filter{$0.isRelishChoose}.flatMap{$0.relishIngredient}
+            return foodIngredientList+dishIngredientList+dessertIngredientList+relishIngredientList
         }
         
         VStack{
-            Spacer()
             HStack{
-                TopButton(topTitle:"主页",buttonActive:showMainMenu){
+                Button{
                     withAnimation{
                         showMainMenu=true
                         showListMenu=false
                     }
+                }label:{
+                    HStack{
+                        
+                        Image(systemName: "menucard")
+                            .foregroundStyle(.white)
+                            .font(.system(size: 30))
+                    }
+                    .frame(width: 160, height: 70)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
                 }
-                
                 Spacer()
-                TopButton(topTitle:"列表",buttonActive:showListMenu){
+                Button{
                     withAnimation{
                         showMainMenu=false
                         showListMenu=true
                     }
+                }label:{
+                    HStack{
+                        Image(systemName: "list.bullet.clipboard")
+                            .foregroundStyle(.white)
+                            .font(.system(size: 30))
+
+                    }
+                    .frame(width: 160, height: 70)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
                 }
                 
             }
-            .padding()
+            .padding(.leading)
+            .padding(.trailing)
             Spacer()
             VStack{
                 //showMainMenu
@@ -146,38 +167,54 @@ struct ContentView: View {
                     Spacer()
                     HStack{
                         VStack{
-                            MenuButton(title:"主食",isActive: showFoodlist){
+                            MenuButton(title:"主\n食",isActive: showFoodlist){
                                 withAnimation {
                                     showFoodlist=true
                                     showDishlist=false
                                     showDessertList=false
+                                    showRelishList=false
                                     showGoShop=false
                                 }
                             }
-                            MenuButton(title:"主菜",isActive: showDishlist){
+                            MenuButton(title:"主\n菜",isActive: showDishlist){
                                 withAnimation {
                                     showFoodlist=false
                                     showDishlist=true
                                     showDessertList=false
+                                    showRelishList=false
                                     showGoShop=false
                                 }
                             }
-                            MenuButton(title:"甜点",isActive: showDessertList){
+                            MenuButton(title:"甜\n点",isActive: showDessertList){
                                 withAnimation {
                                     showFoodlist=false
                                     showDishlist=false
                                     showDessertList=true
+                                    showRelishList=false
                                     showGoShop=false
                                 }
                             }
-                            MenuButton(title:"结算",isActive: showGoShop){
+                            
+                            MenuButton(title:"柴\n米\n油\n盐",isActive: showRelishList){
+                                withAnimation{
+                                    showFoodlist=false
+                                    showDishlist=false
+                                    showDessertList=false
+                                    showRelishList=true
+                                    showGoShop=false
+                                }
+                            }
+                            
+                            MenuButton(title:"购\n物\n车",isActive: showGoShop){
                                 withAnimation {
                                     showFoodlist=false
                                     showDishlist=false
                                     showDessertList=false
+                                    showRelishList=false
                                     showGoShop=true
                                 }
                             }
+                            Spacer()
                         }
                         Spacer()
                         VStack{
@@ -188,7 +225,7 @@ struct ContentView: View {
                                             Button{
                                                 food.isFoodChoose.toggle()
                                             }label:{
-                                                Image(systemName:food.isFoodChoose ? "heart.fill":"heart")
+                                                Image(systemName:food.isFoodChoose ? "rectangle.portrait.fill":"rectangle.portrait")
                                                     .foregroundStyle(.green)
                                                     .font(.system(size: 25))
                                                 Text(food.name)
@@ -198,6 +235,7 @@ struct ContentView: View {
                                         }
                                     }
                                 }
+                                Spacer()
                             }
                             if showDishlist{
                                 VStack{
@@ -206,7 +244,7 @@ struct ContentView: View {
                                             Button{
                                                 dish.isDishChoose.toggle()
                                             }label:{
-                                                Image(systemName:dish.isDishChoose ? "heart.fill":"heart")
+                                                Image(systemName:dish.isDishChoose ? "rectangle.portrait.fill":"rectangle.portrait")
                                                     .foregroundStyle(.green)
                                                     .font(.system(size: 25))
                                                 Text(dish.name)
@@ -216,6 +254,7 @@ struct ContentView: View {
                                         }
                                     }
                                 }
+                                Spacer()
                             }
                             if showDessertList{
                                 VStack{
@@ -224,7 +263,7 @@ struct ContentView: View {
                                             Button{
                                                 dessert.isDessertChoose.toggle()
                                             }label:{
-                                                Image(systemName: dessert.isDessertChoose ? "heart.fill" : "heart")
+                                                Image(systemName: dessert.isDessertChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
                                                     .foregroundStyle(.green)
                                                     .font(.system(size: 25))
                                                 Text(dessert.name)
@@ -234,23 +273,48 @@ struct ContentView: View {
                                         }
                                     }
                                 }
+                                Spacer()
                             }
+                            
+                            if showRelishList{
+                                ScrollView{
+                                    VStack{
+                                        ForEach($RelishList) { $relish in
+                                            HStack{
+                                                Button{
+                                                    relish.isRelishChoose.toggle()
+                                                }label:{
+                                                    Image(systemName: relish.isRelishChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
+                                                        .foregroundStyle(.green)
+                                                        .font(.system(size: 25))
+                                                    Text(relish.name)
+                                                        .font(.system(size: 25))
+                                                        .padding()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer()
+                            }
+                            
                             if showGoShop{
                                 VStack{
                                     Text(itemNumber)
                                         .font(.system(size: 25))
-                                    Button ("结算"){
+                                    Button("结算"){
+                                        
                                     }
                                 }
                             }
                         }
                         .padding()
+                        
                     }
                     Spacer()
                 }
                 
                 if showListMenu{
- 
                     ScrollView{
                         HStack{
                             VStack{
@@ -262,9 +326,19 @@ struct ContentView: View {
                                     Spacer()
                                     ForEach(ingredientList, id: \.self) { ingredient in
                                         HStack{
-                                            Text("icon")
-                                            Spacer()
-                                            Text(ingredient)
+                                            Button{
+                                                if ingredientPickUp.contains(ingredient){
+                                                    ingredientPickUp.remove(ingredient)
+                                                }else{
+                                                    ingredientPickUp.insert(ingredient)
+                                                }
+                                            }label:{
+                                                Image(systemName:ingredientPickUp.contains(ingredient) ? "rectangle.portrait.fill" : "rectangle.portrait")
+                                                    .foregroundStyle(.red)
+                                                    .font(.system(size: 25))
+                                                Spacer()
+                                                Text(ingredient)
+                                            }
                                         }
                                     }
                                     .font(.system(size: 25))
