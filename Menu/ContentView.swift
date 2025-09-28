@@ -57,7 +57,7 @@ struct ExpandingPillButton: View {
                 if isActive {
                     Text(title)
                         .font(.system(size: 16, weight: .semibold))
-                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .transition(.opacity.combined(with: .move(edge: .leading)))
                         .matchedGeometryEffect(id: "label-\(title)", in: ns)
                 }
             }
@@ -78,6 +78,46 @@ struct ExpandingPillButton: View {
     }
 }
 
+struct SelectableRow: View {
+    let title: String
+    @Binding var isSelected: Bool
+    var tint: Color = .green
+    var textColor: Color? = nil
+    var spacing: CGFloat = 12
+
+    var body: some View {
+        Button {
+            isSelected.toggle()
+        } label: {
+            HStack(spacing: spacing) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(isSelected ? tint : tint.opacity(0.7))
+                    .frame(width: 28, height: 28)
+
+                Text(title)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(textColor ?? .primary)
+
+                Spacer()
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.08))
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isSelected)
+    }
+}
 
 
 struct ContentView: View {
@@ -88,10 +128,10 @@ struct ContentView: View {
     @State private var DishList:[DishItem]=[
         DishItem(name:"青菜",dishIngredient: ["青菜"]),
         DishItem(name:"红烧肉",dishIngredient: ["五花肉"]),
-        DishItem(name:"蒜蓉炒菜",dishIngredient: ["蒜蓉","青菜"]),
+        DishItem(name:"蒜蓉炒菜",dishIngredient: ["蒜","青菜"]),
     ]
     @State private var DessertList:[DessertItem]=[
-        DessertItem(name:"提拉米苏",dessertIngredient: ["芝士🧀","拇指饼干","鸡蛋","柠檬","糖","柠檬","咖啡"]),
+        DessertItem(name:"提拉米苏",dessertIngredient: ["芝士🧀","拇指饼干","鸡蛋","柠檬","糖","咖啡"]),
         DessertItem(name: "姜撞奶",dessertIngredient: ["姜","奶"])
     ]
     @State private var RelishList:[RelishItem]=[
@@ -194,82 +234,48 @@ struct ContentView: View {
                     .frame(width: 180, alignment: .leading)
                     Spacer()
                     VStack{
-                        if showFoodlist{
-                            VStack{
-                                ForEach($FoodList) { $food in
-                                    HStack{
-                                        Button{
-                                            food.isFoodChoose.toggle()
-                                        }label:{
-                                            Image(systemName:food.isFoodChoose ? "rectangle.portrait.fill":"rectangle.portrait")
-                                                .foregroundStyle(.green)
-                                                .font(.system(size: 25))
-                                            Text(food.name)
-                                                .font(.system(size: 25))
-                                                .padding()
-                                        }
+                        if showFoodlist {
+                            ScrollView {
+                                LazyVStack(spacing: 10) {
+                                    ForEach($FoodList) { $food in
+                                        SelectableRow(title: food.name, isSelected: $food.isFoodChoose, tint: .green)
                                     }
                                 }
+                                .padding(.vertical, 4)
                             }
                             Spacer()
                         }
-                        if showDishlist{
-                            VStack{
-                                ForEach($DishList) { $dish in
-                                    HStack{
-                                        Button{
-                                            dish.isDishChoose.toggle()
-                                        }label:{
-                                            Image(systemName:dish.isDishChoose ? "rectangle.portrait.fill":"rectangle.portrait")
-                                                .foregroundStyle(.green)
-                                                .font(.system(size: 25))
-                                            Text(dish.name)
-                                                .font(.system(size: 25))
-                                                .padding()
-                                        }
+                        if showDishlist {
+                            ScrollView {
+                                LazyVStack(spacing: 10) {
+                                    ForEach($DishList) { $dish in
+                                        SelectableRow(title: dish.name, isSelected: $dish.isDishChoose, tint: .green)
                                     }
                                 }
+                                .padding(.vertical, 4)
                             }
                             Spacer()
                         }
-                        if showDessertList{
-                            VStack{
-                                ForEach($DessertList){ $dessert in
-                                    HStack{
-                                        Button{
-                                            dessert.isDessertChoose.toggle()
-                                        }label:{
-                                            Image(systemName: dessert.isDessertChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                                .foregroundStyle(.green)
-                                                .font(.system(size: 25))
-                                            Text(dessert.name)
-                                                .font(.system(size: 25))
-                                                .padding()
-                                        }
+                        if showDessertList {
+                            ScrollView {
+                                LazyVStack(spacing: 10) {
+                                    ForEach($DessertList) { $dessert in
+                                        SelectableRow(title: dessert.name, isSelected: $dessert.isDessertChoose, tint: .green)
                                     }
                                 }
+                                .padding(.vertical, 4)
                             }
                             Spacer()
                         }
                         
-                        if showRelishList{
-                            ScrollView{
-                                VStack{
+                        if showRelishList {
+                            ScrollView {
+                                LazyVStack(spacing: 10) {
                                     ForEach($RelishList) { $relish in
-                                        HStack{
-                                            Button{
-                                                relish.isRelishChoose.toggle()
-                                            }label:{
-                                                Image(systemName: relish.isRelishChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                                    .foregroundStyle(.green)
-                                                    .font(.system(size: 25))
-                                                Text(relish.name)
-                                                    .font(.system(size: 25))
-                                                    .padding()
-                                            }
-                                        }
+                                        SelectableRow(title: relish.name, isSelected: $relish.isRelishChoose, tint: .green)
                                     }
                                 }
+                                .padding(.vertical, 4)
                             }
                             Spacer()
                         }
@@ -296,34 +302,44 @@ struct ContentView: View {
             .tag(0)
             
             // 清单
-            ScrollView{
-                HStack{
-                    VStack{
-                        if ingredientList.isEmpty{
-                            Text("暂无食材")
-                                .font(.system(size: 25))
-                                .padding()
-                        }else{
-                            Spacer()
-                            ForEach(ingredientList, id: \.self) { ingredient in
-                                HStack{
-                                    Button{
-                                        if ingredientPickUp.contains(ingredient){
-                                            ingredientPickUp.remove(ingredient)
-                                        }else{
-                                            ingredientPickUp.insert(ingredient)
-                                        }
-                                    }label:{
-                                        Image(systemName:ingredientPickUp.contains(ingredient) ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                            .foregroundStyle(.red)
-                                            .font(.system(size: 25))
-                                        Spacer()
-                                        Text(ingredient)
+            ScrollView {
+                if ingredientList.isEmpty {
+                    Text("暂无食材")
+                        .font(.system(size: 22))
+                        .foregroundStyle(.secondary)
+                        .padding()
+                } else {
+                    LazyVStack(spacing: 10) {
+                        // Count occurrences of each ingredient
+                        let counts = ingredientList.reduce(into: [String: Int]()) { partial, item in
+                            partial[item, default: 0] += 1
+                        }
+                        // Preserve the order of first appearance
+                        var seen = Set<String>()
+                        let uniqueIngredients = ingredientList.filter { seen.insert($0).inserted }
+
+                        ForEach(uniqueIngredients, id: \.self) { ingredient in
+                            let count = counts[ingredient] ?? 1
+                            let displayName = count > 1 ? "\(ingredient) x\(count)" : ingredient
+
+                            let binding = Binding<Bool>(
+                                get: { ingredientPickUp.contains(ingredient) },
+                                set: { newValue in
+                                    if newValue {
+                                        ingredientPickUp.insert(ingredient)
+                                    } else {
+                                        ingredientPickUp.remove(ingredient)
                                     }
                                 }
-                            }
-                            .font(.system(size: 25))
-                            .padding()
+                            )
+
+                            SelectableRow(
+                                title: displayName,
+                                isSelected: binding,
+                                tint: .accentColor,
+                                textColor: ingredientPickUp.contains(ingredient) ? .primary : .secondary,
+                                spacing: 16
+                            )
                         }
                     }
                 }
