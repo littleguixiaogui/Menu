@@ -37,28 +37,47 @@ struct RelishItem: Identifiable {
 }
 
 
-struct MenuButton: View {
+struct ExpandingPillButton: View {
     let title: String
+    let systemImage: String
     let isActive: Bool
     let action: () -> Void
-    
-    //menu button
-    var body: some View{
-        Text(title)
-            .font(.system(size: 20))
-            .fontWeight(.bold)
-            .foregroundStyle(.white)
-            .frame(width: 140, height: 120, alignment: .trailing)
-            .padding(.trailing)
-            .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
-            .offset(x:isActive ? -50:-90)
-            .onTapGesture {
-                withAnimation {
-                    action()
+    @Namespace private var ns
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(isActive ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.12)))
+                    .overlay(Circle().stroke(Color.white.opacity(0.2)))
+                    .matchedGeometryEffect(id: "icon-\(title)", in: ns)
+
+                if isActive {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        .matchedGeometryEffect(id: "label-\(title)", in: ns)
                 }
             }
+            .padding(.vertical, 10)
+            .padding(.horizontal, isActive ? 14 : 6)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(isActive ? Color.accentColor.opacity(0.6) : Color.white.opacity(0.2), lineWidth: isActive ? 2 : 1)
+            )
+            .shadow(color: Color.black.opacity(isActive ? 0.18 : 0.08), radius: isActive ? 10 : 6, x: 0, y: isActive ? 6 : 3)
+        }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isActive)
     }
 }
+
 
 
 struct ContentView: View {
@@ -91,10 +110,6 @@ struct ContentView: View {
     
     
     
-    @State private var showMainMenu: Bool = true
-    @State private var showListMenu: Bool = false
-    
-    
     @State private var showDishlist: Bool = false
     @State private var showFoodlist: Bool = false
     @State private var showDessertList:Bool = false
@@ -123,233 +138,201 @@ struct ContentView: View {
             return foodIngredientList+dishIngredientList+dessertIngredientList+relishIngredientList
         }
         
-        VStack{
-            HStack{
-                Button{
-                    withAnimation{
-                        showMainMenu=true
-                        showListMenu=false
-                    }
-                }label:{
-                    HStack{
-                        
-                        Image(systemName: "menucard")
-                            .foregroundStyle(.white)
-                            .font(.system(size: 30))
-                    }
-                    .frame(width: 160, height: 70)
-                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
-                }
-                Spacer()
-                Button{
-                    withAnimation{
-                        showMainMenu=false
-                        showListMenu=true
-                    }
-                }label:{
-                    HStack{
-                        Image(systemName: "list.bullet.clipboard")
-                            .foregroundStyle(.white)
-                            .font(.system(size: 30))
-
-                    }
-                    .frame(width: 160, height: 70)
-                    .background(RoundedRectangle(cornerRadius: 20).fill(Color.gray))
-                }
-                
-            }
-            .padding(.leading)
-            .padding(.trailing)
-            Spacer()
+        TabView {
+            // 菜单
             VStack{
-                //showMainMenu
-                if showMainMenu{
+                Spacer()
+                HStack{
+                    VStack(alignment: .leading, spacing: 12) {
+                        ExpandingPillButton(title: "主食", systemImage: "takeoutbag.and.cup.and.straw", isActive: showFoodlist) {
+                            withAnimation {
+                                showFoodlist = true
+                                showDishlist = false
+                                showDessertList = false
+                                showRelishList = false
+                                showGoShop = false
+                            }
+                        }
+                        ExpandingPillButton(title: "主菜", systemImage: "fork.knife", isActive: showDishlist) {
+                            withAnimation {
+                                showFoodlist = false
+                                showDishlist = true
+                                showDessertList = false
+                                showRelishList = false
+                                showGoShop = false
+                            }
+                        }
+                        ExpandingPillButton(title: "甜点", systemImage: "apple.logo", isActive: showDessertList) {
+                            withAnimation {
+                                showFoodlist = false
+                                showDishlist = false
+                                showDessertList = true
+                                showRelishList = false
+                                showGoShop = false
+                            }
+                        }
+                        ExpandingPillButton(title: "柴米油盐", systemImage: "leaf", isActive: showRelishList) {
+                            withAnimation {
+                                showFoodlist = false
+                                showDishlist = false
+                                showDessertList = false
+                                showRelishList = true
+                                showGoShop = false
+                            }
+                        }
+                        ExpandingPillButton(title: "购物车", systemImage: "cart", isActive: showGoShop) {
+                            withAnimation {
+                                showFoodlist = false
+                                showDishlist = false
+                                showDessertList = false
+                                showRelishList = false
+                                showGoShop = true
+                            }
+                        }
+                        Spacer()
+                    }
+                    .frame(width: 180, alignment: .leading)
                     Spacer()
-                    HStack{
-                        VStack{
-                            MenuButton(title:"主\n食",isActive: showFoodlist){
-                                withAnimation {
-                                    showFoodlist=true
-                                    showDishlist=false
-                                    showDessertList=false
-                                    showRelishList=false
-                                    showGoShop=false
-                                }
-                            }
-                            MenuButton(title:"主\n菜",isActive: showDishlist){
-                                withAnimation {
-                                    showFoodlist=false
-                                    showDishlist=true
-                                    showDessertList=false
-                                    showRelishList=false
-                                    showGoShop=false
-                                }
-                            }
-                            MenuButton(title:"甜\n点",isActive: showDessertList){
-                                withAnimation {
-                                    showFoodlist=false
-                                    showDishlist=false
-                                    showDessertList=true
-                                    showRelishList=false
-                                    showGoShop=false
-                                }
-                            }
-                            
-                            MenuButton(title:"柴\n米\n油\n盐",isActive: showRelishList){
-                                withAnimation{
-                                    showFoodlist=false
-                                    showDishlist=false
-                                    showDessertList=false
-                                    showRelishList=true
-                                    showGoShop=false
-                                }
-                            }
-                            
-                            MenuButton(title:"购\n物\n车",isActive: showGoShop){
-                                withAnimation {
-                                    showFoodlist=false
-                                    showDishlist=false
-                                    showDessertList=false
-                                    showRelishList=false
-                                    showGoShop=true
+                    VStack{
+                        if showFoodlist{
+                            VStack{
+                                ForEach($FoodList) { $food in
+                                    HStack{
+                                        Button{
+                                            food.isFoodChoose.toggle()
+                                        }label:{
+                                            Image(systemName:food.isFoodChoose ? "rectangle.portrait.fill":"rectangle.portrait")
+                                                .foregroundStyle(.green)
+                                                .font(.system(size: 25))
+                                            Text(food.name)
+                                                .font(.system(size: 25))
+                                                .padding()
+                                        }
+                                    }
                                 }
                             }
                             Spacer()
                         }
-                        Spacer()
-                        VStack{
-                            if showFoodlist{
-                                VStack{
-                                    ForEach($FoodList) { $food in
-                                        HStack{
-                                            Button{
-                                                food.isFoodChoose.toggle()
-                                            }label:{
-                                                Image(systemName:food.isFoodChoose ? "rectangle.portrait.fill":"rectangle.portrait")
-                                                    .foregroundStyle(.green)
-                                                    .font(.system(size: 25))
-                                                Text(food.name)
-                                                    .font(.system(size: 25))
-                                                    .padding()
-                                            }
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            if showDishlist{
-                                VStack{
-                                    ForEach($DishList) { $dish in
-                                        HStack{
-                                            Button{
-                                                dish.isDishChoose.toggle()
-                                            }label:{
-                                                Image(systemName:dish.isDishChoose ? "rectangle.portrait.fill":"rectangle.portrait")
-                                                    .foregroundStyle(.green)
-                                                    .font(.system(size: 25))
-                                                Text(dish.name)
-                                                    .font(.system(size: 25))
-                                                    .padding()
-                                            }
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            if showDessertList{
-                                VStack{
-                                    ForEach($DessertList){ $dessert in
-                                        HStack{
-                                            Button{
-                                                dessert.isDessertChoose.toggle()
-                                            }label:{
-                                                Image(systemName: dessert.isDessertChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                                    .foregroundStyle(.green)
-                                                    .font(.system(size: 25))
-                                                Text(dessert.name)
-                                                    .font(.system(size: 25))
-                                                    .padding()
-                                            }
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            
-                            if showRelishList{
-                                ScrollView{
-                                    VStack{
-                                        ForEach($RelishList) { $relish in
-                                            HStack{
-                                                Button{
-                                                    relish.isRelishChoose.toggle()
-                                                }label:{
-                                                    Image(systemName: relish.isRelishChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                                        .foregroundStyle(.green)
-                                                        .font(.system(size: 25))
-                                                    Text(relish.name)
-                                                        .font(.system(size: 25))
-                                                        .padding()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            
-                            if showGoShop{
-                                VStack{
-                                    Text(itemNumber)
-                                        .font(.system(size: 25))
-                                    Button("结算"){
-                                        
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                        
-                    }
-                    Spacer()
-                }
-                
-                if showListMenu{
-                    ScrollView{
-                        HStack{
+                        if showDishlist{
                             VStack{
-                                if ingredientList.isEmpty{
-                                    Text("暂无食材")
-                                        .font(.system(size: 25))
-                                        .padding()
-                                }else{
-                                    Spacer()
-                                    ForEach(ingredientList, id: \.self) { ingredient in
+                                ForEach($DishList) { $dish in
+                                    HStack{
+                                        Button{
+                                            dish.isDishChoose.toggle()
+                                        }label:{
+                                            Image(systemName:dish.isDishChoose ? "rectangle.portrait.fill":"rectangle.portrait")
+                                                .foregroundStyle(.green)
+                                                .font(.system(size: 25))
+                                            Text(dish.name)
+                                                .font(.system(size: 25))
+                                                .padding()
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer()
+                        }
+                        if showDessertList{
+                            VStack{
+                                ForEach($DessertList){ $dessert in
+                                    HStack{
+                                        Button{
+                                            dessert.isDessertChoose.toggle()
+                                        }label:{
+                                            Image(systemName: dessert.isDessertChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
+                                                .foregroundStyle(.green)
+                                                .font(.system(size: 25))
+                                            Text(dessert.name)
+                                                .font(.system(size: 25))
+                                                .padding()
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer()
+                        }
+                        
+                        if showRelishList{
+                            ScrollView{
+                                VStack{
+                                    ForEach($RelishList) { $relish in
                                         HStack{
                                             Button{
-                                                if ingredientPickUp.contains(ingredient){
-                                                    ingredientPickUp.remove(ingredient)
-                                                }else{
-                                                    ingredientPickUp.insert(ingredient)
-                                                }
+                                                relish.isRelishChoose.toggle()
                                             }label:{
-                                                Image(systemName:ingredientPickUp.contains(ingredient) ? "rectangle.portrait.fill" : "rectangle.portrait")
-                                                    .foregroundStyle(.red)
+                                                Image(systemName: relish.isRelishChoose ? "rectangle.portrait.fill" : "rectangle.portrait")
+                                                    .foregroundStyle(.green)
                                                     .font(.system(size: 25))
-                                                Spacer()
-                                                Text(ingredient)
+                                                Text(relish.name)
+                                                    .font(.system(size: 25))
+                                                    .padding()
                                             }
                                         }
                                     }
+                                }
+                            }
+                            Spacer()
+                        }
+                        
+                        if showGoShop{
+                            VStack{
+                                Text(itemNumber)
                                     .font(.system(size: 25))
-                                    .padding()
+                                Button("结算"){
+                                    
                                 }
                             }
                         }
                     }
+                    .padding()
+                    
                 }
                 Spacer()
             }
+            .tabItem {
+                Image(systemName: "menucard")
+                Text("菜单")
+            }
+            .tag(0)
+            
+            // 清单
+            ScrollView{
+                HStack{
+                    VStack{
+                        if ingredientList.isEmpty{
+                            Text("暂无食材")
+                                .font(.system(size: 25))
+                                .padding()
+                        }else{
+                            Spacer()
+                            ForEach(ingredientList, id: \.self) { ingredient in
+                                HStack{
+                                    Button{
+                                        if ingredientPickUp.contains(ingredient){
+                                            ingredientPickUp.remove(ingredient)
+                                        }else{
+                                            ingredientPickUp.insert(ingredient)
+                                        }
+                                    }label:{
+                                        Image(systemName:ingredientPickUp.contains(ingredient) ? "rectangle.portrait.fill" : "rectangle.portrait")
+                                            .foregroundStyle(.red)
+                                            .font(.system(size: 25))
+                                        Spacer()
+                                        Text(ingredient)
+                                    }
+                                }
+                            }
+                            .font(.system(size: 25))
+                            .padding()
+                        }
+                    }
+                }
+            }
+            .tabItem {
+                Image(systemName: "list.bullet.clipboard")
+                Text("清单")
+            }
+            .tag(1)
         }
     }
 }
@@ -357,3 +340,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+
